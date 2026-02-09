@@ -19,15 +19,19 @@ import prisma from '../../config/database.js';
  * @returns {Promise<{data: Array, total: number}>}
  */
 export async function findAll(options = {}) {
-  const {
-    page = 1,
-    limit = 20,
-    search,
-    status,
-    subscriptionPlan,
-    sortBy = 'createdAt',
-    sortOrder = 'desc',
-  } = options;
+const {
+  page = 1,
+  limit = 20,
+  search,
+  status,
+  subscriptionPlan,
+  sortBy = 'createdAt',
+  sortOrder = 'desc',
+} = options;
+
+// Convert to integers (query params come as strings)
+const pageNum = parseInt(page, 10);
+const limitNum = parseInt(limit, 10);
 
   // Build where clause
   const where = {
@@ -71,8 +75,8 @@ export async function findAll(options = {}) {
         },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.organization.count({ where }),
   ]);

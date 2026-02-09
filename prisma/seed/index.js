@@ -12,7 +12,7 @@
  *   npm run seed -- --help           # Show help
  */
 
-import prisma from '../../../src/config/database.js';
+import prisma from '../../src/config/database.js';
 import { seedPlatform } from './platform.seed.js';
 import { seedMasterData } from './masterData.seed.js';
 import { seedDemo } from './demo.seed.js';

@@ -1,11 +1,3 @@
-
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,23 +7,14 @@ datasource db {
 }
 
 // ============================================================================
-// NDASSIST — Complete Prisma Schema v2.0
+// NDASSIST — Complete Prisma Schema v3.0
 // Multi-Tenant NDIS Provider Management Platform
 // ============================================================================
-// Architecture:
-//   Layer 1: PLATFORM  → Super Admin, Subscriptions, Feature Flags
-//   Layer 2: TENANT    → Organization (each NDIS Provider)
-//   Layer 3: OPERATIONS→ Staff, Clients, Shifts, Billing, Forms, etc.
-//
-// Total: 70+ models | 40+ enums | Full multi-tenancy
-// ============================================================================
-
 
 // ============================================================================
 // ENUMS
 // ============================================================================
 
-// --- Platform ---
 enum PlatformRole {
   SUPER_ADMIN
   PLATFORM_SUPPORT
@@ -64,7 +47,6 @@ enum PlatformInvoiceStatus {
   REFUNDED
 }
 
-// --- Organization ---
 enum OrgRole {
   ORG_OWNER
   ADMIN
@@ -82,7 +64,6 @@ enum OrgStatus {
   DEACTIVATED
 }
 
-// --- User ---
 enum UserStatus {
   ACTIVE
   INVITED
@@ -97,7 +78,6 @@ enum InviteStatus {
   CANCELLED
 }
 
-// --- Staff ---
 enum EmploymentType {
   FULL_TIME
   PART_TIME
@@ -138,7 +118,6 @@ enum ApprovalStatus {
   CANCELLED
 }
 
-// --- Client ---
 enum ClientStatus {
   ACTIVE
   INACTIVE
@@ -197,7 +176,6 @@ enum AssessmentType {
   BEHAVIORAL
 }
 
-// --- Scheduling ---
 enum ShiftStatus {
   DRAFT
   PUBLISHED
@@ -262,7 +240,6 @@ enum ClientMood {
   NOT_ASSESSED
 }
 
-// --- Billing ---
 enum InvoiceStatus {
   DRAFT
   APPROVED
@@ -306,7 +283,6 @@ enum XeroSyncStatus {
   SKIPPED
 }
 
-// --- Documents ---
 enum DocumentStatus {
   ACTIVE
   EXPIRING_SOON
@@ -315,7 +291,6 @@ enum DocumentStatus {
   ARCHIVED
 }
 
-// --- Incidents ---
 enum IncidentType {
   INJURY
   NEAR_MISS
@@ -363,7 +338,6 @@ enum ComplaintStatus {
   CLOSED
 }
 
-// --- Communication ---
 enum NotificationType {
   SHIFT_REMINDER
   SHIFT_CHANGE
@@ -385,6 +359,13 @@ enum NotificationChannel {
   PUSH
 }
 
+enum AnnouncementPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
 enum EmailStatus {
   QUEUED
   SENT
@@ -400,7 +381,6 @@ enum SmsStatus {
   FAILED
 }
 
-// --- Forms ---
 enum FormFieldType {
   TEXT
   TEXTAREA
@@ -423,7 +403,6 @@ enum FormSubmissionStatus {
   APPROVED
 }
 
-// --- System ---
 enum LogLevel {
   DEBUG
   INFO
@@ -459,7 +438,7 @@ enum ScheduleFrequency {
 
 
 // ============================================================================
-// ██  LAYER 1: PLATFORM (SUPER ADMIN)
+// LAYER 1: PLATFORM
 // ============================================================================
 
 model PlatformAdmin {
@@ -520,38 +499,41 @@ model Organization {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  subscription      Subscription?
-  users             User[]
-  roles             OrgCustomRole[]
-  clients           Client[]
-  staffMembers      StaffMember[]
-  serviceTypes      ServiceType[]
-  shifts            Shift[]
-  recurringPatterns RecurringShiftPattern[]
-  invoices          Invoice[]
-  payments          Payment[]
-  creditNotes       CreditNote[]
-  ndisPriceGuide    NdisPriceGuideEntry[]
-  payGroups         PayGroup[]
-  allowanceConfigs  AllowanceConfig[]
-  publicHolidays    PublicHoliday[]
-  incidents         Incident[]
-  complaints        Complaint[]
-  messages          Message[]
-  notifications     Notification[]
-  documents         OrgDocument[]
-  formTemplates     FormTemplate[]
-  scheduledReports  ScheduledReport[]
-  auditLogs         AuditLog[]
-  orgSettings       OrgSetting[]
-  masterData        MasterDataItem[]
-  xeroConnection    XeroConnection?
-  emailLogs         EmailLog[]
-  smsLogs           SmsLog[]
-  geofences         Geofence[]
-  kpiDefinitions    KpiDefinition[]
-  teams             Team[]
-  invitations       UserInvitation[]
+  subscription       Subscription?
+  users              User[]
+  roles              OrgCustomRole[]
+  clients            Client[]
+  staffMembers       StaffMember[]
+  serviceTypes       ServiceType[]
+  shifts             Shift[]
+  recurringPatterns  RecurringShiftPattern[]
+  invoices           Invoice[]
+  payments           Payment[]
+  creditNotes        CreditNote[]
+  ndisPriceGuide     NdisPriceGuideEntry[]
+  payGroups          PayGroup[]
+  allowanceConfigs   AllowanceConfig[]
+  publicHolidays     PublicHoliday[]
+  incidents          Incident[]
+  complaints         Complaint[]
+  messages           Message[]
+  announcements      Announcement[]
+  notifications      Notification[]
+  documentCategories DocumentCategory[]
+  documents          OrgDocument[]
+  formTemplates      FormTemplate[]
+  scheduledReports   ScheduledReport[]
+  auditLogs          AuditLog[]
+  activityLogs       ActivityLog[]
+  orgSettings        OrgSetting[]
+  masterData         MasterDataItem[]
+  xeroConnection     XeroConnection?
+  emailLogs          EmailLog[]
+  smsLogs            SmsLog[]
+  geofences          Geofence[]
+  kpiDefinitions     KpiDefinition[]
+  teams              Team[]
+  invitations        UserInvitation[]
 
   @@index([slug])
   @@index([status])
@@ -636,7 +618,7 @@ model FeatureFlag {
 
 
 // ============================================================================
-// ██  LAYER 2: AUTH & RBAC
+// LAYER 2: AUTH & RBAC
 // ============================================================================
 
 model User {
@@ -656,18 +638,25 @@ model User {
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
 
-  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  customRole       OrgCustomRole?   @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
-  sessions         Session[]
-  passwordResets   PasswordReset[]
-  staffProfile     StaffMember?
-  clientProfile    Client?
-  familyLinks      ClientFamilyMember[]
-  sentMessages     Message[]        @relation("SentMessages")
-  receivedMessages Message[]        @relation("ReceivedMessages")
-  notifications    Notification[]
-  auditLogs        AuditLog[]
-  activityLogs     ActivityLog[]
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customRole         OrgCustomRole?      @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
+  sessions           Session[]
+  passwordResets     PasswordReset[]
+  staffProfile       StaffMember?
+  clientProfile      Client?
+  familyLinks        ClientFamilyMember[]
+  sentMessages       Message[]           @relation("SentMessages")
+  receivedMessages   Message[]           @relation("ReceivedMessages")
+  announcements      Announcement[]      @relation("AnnouncementCreator")
+  notifications      Notification[]
+  uploadedDocuments  OrgDocument[]       @relation("DocUploader")
+  documentSignatures DocumentSignature[] @relation("DocSigner")
+  createdForms       FormTemplate[]      @relation("FormCreator")
+  formSubmissions    FormSubmission[]    @relation("FormSubmitter")
+  incidentsReported  Incident[]          @relation("IncidentReporter")
+  complaintsReported Complaint[]         @relation("ComplaintReporter")
+  auditLogs          AuditLog[]
+  activityLogs       ActivityLog[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -743,36 +732,36 @@ model UserInvitation {
 
 
 // ============================================================================
-// ██  LAYER 3A: STAFF MANAGEMENT
+// LAYER 3A: STAFF MANAGEMENT
 // ============================================================================
 
 model StaffMember {
-  id                     String           @id @default(cuid())
-  organizationId         String           @map("organization_id")
-  userId                 String           @unique @map("user_id")
-  employeeId             String           @map("employee_id")
-  position               String
-  department             String?
-  employmentType         EmploymentType   @map("employment_type")
-  employmentStatus       EmploymentStatus @default(ACTIVE) @map("employment_status")
-  hourlyRate             Decimal          @map("hourly_rate") @db.Decimal(8, 2)
-  payGroupId             String?          @map("pay_group_id")
-  hasNdisWorkerScreening Boolean          @default(false) @map("has_ndis_worker_screening")
-  ndisScreeningNumber    String?          @map("ndis_screening_number")
-  ndisScreeningExpiry    DateTime?        @map("ndis_screening_expiry")
-  hasPoliceCheck         Boolean          @default(false) @map("has_police_check")
-  policeCheckExpiry      DateTime?        @map("police_check_expiry")
-  hasWorkingWithChildren Boolean          @default(false) @map("has_working_with_children")
-  wwcCheckExpiry         DateTime?        @map("wwc_check_expiry")
-  hasFirstAid            Boolean          @default(false) @map("has_first_aid")
-  firstAidExpiry         DateTime?        @map("first_aid_expiry")
-  startDate              DateTime         @map("start_date")
-  endDate                DateTime?        @map("end_date")
-  emergencyContactName   String?          @map("emergency_contact_name")
-  emergencyContactPhone  String?          @map("emergency_contact_phone")
-  emergencyContactRelation String?        @map("emergency_contact_relation")
-  createdAt              DateTime         @default(now()) @map("created_at")
-  updatedAt              DateTime         @updatedAt @map("updated_at")
+  id                       String           @id @default(cuid())
+  organizationId           String           @map("organization_id")
+  userId                   String           @unique @map("user_id")
+  employeeId               String           @map("employee_id")
+  position                 String
+  department               String?
+  employmentType           EmploymentType   @map("employment_type")
+  employmentStatus         EmploymentStatus @default(ACTIVE) @map("employment_status")
+  hourlyRate               Decimal          @map("hourly_rate") @db.Decimal(8, 2)
+  payGroupId               String?          @map("pay_group_id")
+  hasNdisWorkerScreening   Boolean          @default(false) @map("has_ndis_worker_screening")
+  ndisScreeningNumber      String?          @map("ndis_screening_number")
+  ndisScreeningExpiry      DateTime?        @map("ndis_screening_expiry")
+  hasPoliceCheck           Boolean          @default(false) @map("has_police_check")
+  policeCheckExpiry        DateTime?        @map("police_check_expiry")
+  hasWorkingWithChildren   Boolean          @default(false) @map("has_working_with_children")
+  wwcCheckExpiry           DateTime?        @map("wwc_check_expiry")
+  hasFirstAid              Boolean          @default(false) @map("has_first_aid")
+  firstAidExpiry           DateTime?        @map("first_aid_expiry")
+  startDate                DateTime         @map("start_date")
+  endDate                  DateTime?        @map("end_date")
+  emergencyContactName     String?          @map("emergency_contact_name")
+  emergencyContactPhone    String?          @map("emergency_contact_phone")
+  emergencyContactRelation String?          @map("emergency_contact_relation")
+  createdAt                DateTime         @default(now()) @map("created_at")
+  updatedAt                DateTime         @updatedAt @map("updated_at")
 
   organization       Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -790,6 +779,7 @@ model StaffMember {
   originalSwaps      ShiftSwap[]             @relation("OriginalStaff")
   newSwaps           ShiftSwap[]             @relation("NewStaff")
   teamMembers        TeamMember[]
+  formSubmissions    FormSubmission[]
   kpiValues          KpiValue[]
   locationLogs       StaffLocationLog[]
 
@@ -941,7 +931,7 @@ model TeamMember {
 
 
 // ============================================================================
-// ██  LAYER 3B: CLIENT MANAGEMENT
+// LAYER 3B: CLIENT MANAGEMENT
 // ============================================================================
 
 model Client {
@@ -976,8 +966,8 @@ model Client {
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
 
-  organization      Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user              User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user              User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
   fundingSources    ClientFundingSource[]
   budgetLines       ClientBudgetLine[]
   goals             ClientGoal[]
@@ -994,6 +984,7 @@ model Client {
   creditNotes       CreditNote[]
   incidents         Incident[]
   complaints        Complaint[]
+  formSubmissions   FormSubmission[]
 
   @@unique([organizationId, ndisNumber])
   @@index([organizationId])
@@ -1078,17 +1069,17 @@ model ClientGoalMilestone {
 }
 
 model ClientAssessment {
-  id             String         @id @default(cuid())
-  clientId       String         @map("client_id")
-  assessmentType AssessmentType @map("assessment_type")
-  assessmentDate DateTime       @map("assessment_date")
-  assessorName   String?        @map("assessor_name")
-  findings       String?
+  id              String         @id @default(cuid())
+  clientId        String         @map("client_id")
+  assessmentType  AssessmentType @map("assessment_type")
+  assessmentDate  DateTime       @map("assessment_date")
+  assessorName    String?        @map("assessor_name")
+  findings        String?
   recommendations String?
-  riskLevel      Severity?      @map("risk_level")
-  attachmentUrl  String?        @map("attachment_url")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
+  riskLevel       Severity?      @map("risk_level")
+  attachmentUrl   String?        @map("attachment_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
@@ -1196,7 +1187,7 @@ model ClientServiceAgreement {
 
 
 // ============================================================================
-// ██  LAYER 3C: SCHEDULING & TIME TRACKING
+// LAYER 3C: SCHEDULING & TIME TRACKING
 // ============================================================================
 
 model ServiceType {
@@ -1385,6 +1376,7 @@ model PublicHoliday {
   holidayDate    DateTime @map("holiday_date")
   state          String?
   isNational     Boolean  @default(false) @map("is_national")
+  isRecurring    Boolean  @default(false) @map("is_recurring")
   createdAt      DateTime @default(now()) @map("created_at")
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1395,7 +1387,7 @@ model PublicHoliday {
 
 
 // ============================================================================
-// ██  LAYER 3D: BILLING & ACCOUNTS
+// LAYER 3D: BILLING & ACCOUNTS
 // ============================================================================
 
 model NdisPriceGuideEntry {
@@ -1425,18 +1417,25 @@ model NdisPriceGuideEntry {
 }
 
 model PayGroup {
-  id                  String   @id @default(cuid())
-  organizationId      String   @map("organization_id")
-  name                String
-  description         String?
-  baseHourlyRate      Decimal  @map("base_hourly_rate") @db.Decimal(8, 2)
-  saturdayMultiplier  Decimal  @default(1.5) @map("saturday_multiplier") @db.Decimal(4, 2)
-  sundayMultiplier    Decimal  @default(2.0) @map("sunday_multiplier") @db.Decimal(4, 2)
-  holidayMultiplier   Decimal  @default(2.5) @map("holiday_multiplier") @db.Decimal(4, 2)
-  eveningLoadingPct   Decimal  @default(0) @map("evening_loading_pct") @db.Decimal(5, 2)
-  nightLoadingPct     Decimal  @default(0) @map("night_loading_pct") @db.Decimal(5, 2)
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                     String   @id @default(cuid())
+  organizationId         String   @map("organization_id")
+  name                   String
+  description            String?
+  baseHourlyRate         Decimal  @map("base_hourly_rate") @db.Decimal(8, 2)
+  saturdayMultiplier     Decimal  @default(1.5) @map("saturday_multiplier") @db.Decimal(4, 2)
+  sundayMultiplier       Decimal  @default(2.0) @map("sunday_multiplier") @db.Decimal(4, 2)
+  holidayMultiplier      Decimal  @default(2.5) @map("holiday_multiplier") @db.Decimal(4, 2)
+  eveningLoadingPct      Decimal  @default(0) @map("evening_loading_pct") @db.Decimal(5, 2)
+  nightLoadingPct        Decimal  @default(0) @map("night_loading_pct") @db.Decimal(5, 2)
+  earlyMorningLoadingPct Decimal  @default(0) @map("early_morning_loading_pct") @db.Decimal(5, 2)
+  overtimeMultiplier     Decimal  @default(1.5) @map("overtime_multiplier") @db.Decimal(4, 2)
+  compoundLoadings       Boolean  @default(false) @map("compound_loadings")
+  dayStartTime           String   @default("06:00") @map("day_start_time")
+  eveningStartTime       String   @default("20:00") @map("evening_start_time")
+  nightStartTime         String   @default("00:00") @map("night_start_time")
+  isActive               Boolean  @default(true) @map("is_active")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
 
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   staffMembers StaffMember[]
@@ -1462,25 +1461,25 @@ model AllowanceConfig {
 }
 
 model Invoice {
-  id             String        @id @default(cuid())
-  organizationId String        @map("organization_id")
-  clientId       String        @map("client_id")
-  invoiceNumber  String        @map("invoice_number")
-  invoiceDate    DateTime      @map("invoice_date")
-  dueDate        DateTime?     @map("due_date")
-  subtotal       Decimal       @default(0) @db.Decimal(12, 2)
-  gstAmount      Decimal       @default(0) @map("gst_amount") @db.Decimal(10, 2)
-  totalAmount    Decimal       @map("total_amount") @db.Decimal(12, 2)
-  paidAmount     Decimal       @default(0) @map("paid_amount") @db.Decimal(12, 2)
-  status         InvoiceStatus @default(DRAFT)
-  isNdisInvoice  Boolean       @default(false) @map("is_ndis_invoice")
-  notes          String?
-  xeroInvoiceId  String?       @map("xero_invoice_id")
-  xeroSyncStatus XeroSyncStatus? @map("xero_sync_status")
-  xeroSyncedAt   DateTime?     @map("xero_synced_at")
-  xeroSyncError  String?       @map("xero_sync_error")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  id              String          @id @default(cuid())
+  organizationId  String          @map("organization_id")
+  clientId        String          @map("client_id")
+  invoiceNumber   String          @map("invoice_number")
+  invoiceDate     DateTime        @map("invoice_date")
+  dueDate         DateTime?       @map("due_date")
+  subtotal        Decimal         @default(0) @db.Decimal(12, 2)
+  gstAmount       Decimal         @default(0) @map("gst_amount") @db.Decimal(10, 2)
+  totalAmount     Decimal         @map("total_amount") @db.Decimal(12, 2)
+  paidAmount      Decimal         @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  status          InvoiceStatus   @default(DRAFT)
+  isNdisInvoice   Boolean         @default(false) @map("is_ndis_invoice")
+  notes           String?
+  xeroInvoiceId   String?         @map("xero_invoice_id")
+  xeroSyncStatus  XeroSyncStatus? @map("xero_sync_status")
+  xeroSyncedAt    DateTime?       @map("xero_synced_at")
+  xeroSyncError   String?         @map("xero_sync_error")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
   organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client       Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -1496,17 +1495,17 @@ model Invoice {
 }
 
 model InvoiceLineItem {
-  id            String   @id @default(cuid())
-  invoiceId     String   @map("invoice_id")
-  shiftId       String?  @map("shift_id")
-  supportItemNo String?  @map("support_item_no")
+  id            String    @id @default(cuid())
+  invoiceId     String    @map("invoice_id")
+  shiftId       String?   @map("shift_id")
+  supportItemNo String?   @map("support_item_no")
   description   String
   date          DateTime?
-  quantity      Decimal  @db.Decimal(8, 2)
-  unitPrice     Decimal  @map("unit_price") @db.Decimal(8, 2)
-  gstAmount     Decimal  @default(0) @map("gst_amount") @db.Decimal(8, 2)
-  total         Decimal  @db.Decimal(10, 2)
-  createdAt     DateTime @default(now()) @map("created_at")
+  quantity      Decimal   @db.Decimal(8, 2)
+  unitPrice     Decimal   @map("unit_price") @db.Decimal(8, 2)
+  gstAmount     Decimal   @default(0) @map("gst_amount") @db.Decimal(8, 2)
+  total         Decimal   @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   shift   Shift?  @relation(fields: [shiftId], references: [id], onDelete: SetNull)
@@ -1559,18 +1558,18 @@ model CreditNote {
 }
 
 model XeroConnection {
-  id             String   @id @default(cuid())
-  organizationId String   @unique @map("organization_id")
-  xeroTenantId   String   @map("xero_tenant_id")
-  xeroTenantName String?  @map("xero_tenant_name")
-  accessToken    String   @map("access_token")
-  refreshToken   String   @map("refresh_token")
-  tokenExpiresAt DateTime @map("token_expires_at")
+  id             String    @id @default(cuid())
+  organizationId String    @unique @map("organization_id")
+  xeroTenantId   String    @map("xero_tenant_id")
+  xeroTenantName String?   @map("xero_tenant_name")
+  accessToken    String    @map("access_token")
+  refreshToken   String    @map("refresh_token")
+  tokenExpiresAt DateTime  @map("token_expires_at")
   scopes         String?
-  isActive       Boolean  @default(true) @map("is_active")
+  isActive       Boolean   @default(true) @map("is_active")
   lastSyncAt     DateTime? @map("last_sync_at")
-  connectedAt    DateTime @default(now()) @map("connected_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  connectedAt    DateTime  @default(now()) @map("connected_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -1579,7 +1578,7 @@ model XeroConnection {
 
 
 // ============================================================================
-// ██  LAYER 3E: INCIDENTS & COMPLAINTS
+// LAYER 3E: INCIDENTS & COMPLAINTS
 // ============================================================================
 
 model Incident {
@@ -1588,7 +1587,7 @@ model Incident {
   incidentNumber   String         @map("incident_number")
   clientId         String?        @map("client_id")
   staffId          String?        @map("staff_id")
-  reportedBy       String?        @map("reported_by")
+  reportedById     String?        @map("reported_by")
   incidentType     IncidentType   @map("incident_type")
   severity         Severity
   description      String
@@ -1608,6 +1607,7 @@ model Incident {
   organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client       Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
   staff        StaffMember?       @relation("StaffIncident", fields: [staffId], references: [id], onDelete: SetNull)
+  reportedBy   User?              @relation("IncidentReporter", fields: [reportedById], references: [id], onDelete: SetNull)
   followUps    IncidentFollowUp[]
 
   @@unique([organizationId, incidentNumber])
@@ -1635,22 +1635,28 @@ model IncidentFollowUp {
 }
 
 model Complaint {
-  id              String          @id @default(cuid())
-  organizationId  String          @map("organization_id")
-  complaintNumber String          @map("complaint_number")
-  clientId        String?         @map("client_id")
-  complaintType   ComplaintType   @map("complaint_type")
-  subject         String
-  description     String
-  filedBy         String?         @map("filed_by")
-  status          ComplaintStatus @default(OPEN)
-  resolution      String?
-  resolvedAt      DateTime?       @map("resolved_at")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  id                 String          @id @default(cuid())
+  organizationId     String          @map("organization_id")
+  complaintNumber    String          @map("complaint_number")
+  clientId           String?         @map("client_id")
+  complaintType      ComplaintType   @map("complaint_type")
+  subject            String
+  description        String
+  reportedById       String?         @map("filed_by")
+  complainantName    String?         @map("complainant_name")
+  complainantContact String?         @map("complainant_contact")
+  desiredOutcome     String?         @map("desired_outcome")
+  investigation      String?
+  assignedTo         String?         @map("assigned_to")
+  status             ComplaintStatus @default(OPEN)
+  resolution         String?
+  resolvedAt         DateTime?       @map("resolved_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  reportedBy   User?        @relation("ComplaintReporter", fields: [reportedById], references: [id], onDelete: SetNull)
 
   @@unique([organizationId, complaintNumber])
   @@index([organizationId])
@@ -1659,19 +1665,21 @@ model Complaint {
 
 
 // ============================================================================
-// ██  LAYER 3F: COMMUNICATION
+// LAYER 3F: COMMUNICATION
 // ============================================================================
 
 model Message {
-  id             String   @id @default(cuid())
-  organizationId String   @map("organization_id")
-  senderId       String   @map("sender_id")
-  recipientId    String   @map("recipient_id")
-  subject        String?
-  body           String
-  isRead         Boolean  @default(false) @map("is_read")
-  readAt         DateTime? @map("read_at")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  senderId        String    @map("sender_id")
+  recipientId     String    @map("recipient_id")
+  parentMessageId String?   @map("parent_message_id")
+  subject         String?
+  body            String
+  isRead          Boolean   @default(false) @map("is_read")
+  readAt          DateTime? @map("read_at")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
@@ -1680,6 +1688,27 @@ model Message {
   @@index([organizationId])
   @@index([recipientId, isRead])
   @@map("messages")
+}
+
+model Announcement {
+  id             String               @id @default(cuid())
+  organizationId String               @map("organization_id")
+  createdById    String               @map("created_by_id")
+  title          String
+  content        String
+  priority       AnnouncementPriority @default(NORMAL)
+  targetRoles    String[]             @map("target_roles")
+  isActive       Boolean              @default(true) @map("is_active")
+  publishAt      DateTime?            @map("publish_at")
+  expiresAt      DateTime?            @map("expires_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdByUser User         @relation("AnnouncementCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("announcements")
 }
 
 model Notification {
@@ -1739,45 +1768,73 @@ model SmsLog {
 
 
 // ============================================================================
-// ██  LAYER 3G: FORM BUILDER
+// LAYER 3G: FORM BUILDER
 // ============================================================================
 
 model FormTemplate {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
+  createdById    String?  @map("created_by")
   name           String
   description    String?
   category       String
-  fields         Json
+  isActive       Boolean  @default(true) @map("is_active")
   isPublished    Boolean  @default(false) @map("is_published")
   isSystemForm   Boolean  @default(false) @map("is_system_form")
   version        Int      @default(1)
-  createdBy      String?  @map("created_by")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  submissions  FormSubmission[]
+  organization  Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdByUser User?            @relation("FormCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  fields        FormField[]
+  submissions   FormSubmission[]
 
+  @@unique([organizationId, name])
   @@index([organizationId])
   @@map("form_templates")
 }
 
-model FormSubmission {
-  id          String               @id @default(cuid())
-  templateId  String               @map("template_id")
-  submittedBy String               @map("submitted_by")
-  clientId    String?              @map("client_id")
-  shiftId     String?              @map("shift_id")
-  data        Json
-  status      FormSubmissionStatus @default(DRAFT)
-  submittedAt DateTime?            @map("submitted_at")
-  reviewedBy  String?              @map("reviewed_by")
-  reviewedAt  DateTime?            @map("reviewed_at")
-  createdAt   DateTime             @default(now()) @map("created_at")
-  updatedAt   DateTime             @updatedAt @map("updated_at")
+model FormField {
+  id           String        @id @default(cuid())
+  templateId   String        @map("template_id")
+  fieldName    String        @map("field_name")
+  label        String
+  fieldType    FormFieldType @map("field_type")
+  isRequired   Boolean       @default(false) @map("is_required")
+  placeholder  String?
+  helpText     String?       @map("help_text")
+  defaultValue String?       @map("default_value")
+  options      String[]
+  validation   Json?
+  displayOrder Int           @default(0) @map("display_order")
+  createdAt    DateTime      @default(now()) @map("created_at")
 
   template FormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("form_fields")
+}
+
+model FormSubmission {
+  id            String               @id @default(cuid())
+  templateId    String               @map("template_id")
+  submittedById String               @map("submitted_by")
+  clientId      String?              @map("client_id")
+  staffId       String?              @map("staff_id")
+  shiftId       String?              @map("shift_id")
+  data          Json
+  status        FormSubmissionStatus @default(DRAFT)
+  submittedAt   DateTime?            @map("submitted_at")
+  reviewedBy    String?              @map("reviewed_by")
+  reviewedAt    DateTime?            @map("reviewed_at")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  template        FormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  submittedByUser User         @relation("FormSubmitter", fields: [submittedById], references: [id], onDelete: Cascade)
+  client          Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  staff           StaffMember? @relation(fields: [staffId], references: [id], onDelete: SetNull)
 
   @@index([templateId])
   @@map("form_submissions")
@@ -1785,29 +1842,70 @@ model FormSubmission {
 
 
 // ============================================================================
-// ██  LAYER 3H: ORG DOCUMENTS
+// LAYER 3H: ORG DOCUMENTS
 // ============================================================================
 
-model OrgDocument {
-  id             String         @id @default(cuid())
-  organizationId String         @map("organization_id")
-  category       String
-  title          String
+model DocumentCategory {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
   description    String?
-  fileName       String         @map("file_name")
-  fileUrl        String         @map("file_url")
-  fileSize       Int?           @map("file_size")
-  version        Int            @default(1)
-  status         DocumentStatus @default(ACTIVE)
-  uploadedBy     String?        @map("uploaded_by")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
+  color          String?
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  documents    OrgDocument[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("document_categories")
+}
+
+model OrgDocument {
+  id                String         @id @default(cuid())
+  organizationId    String         @map("organization_id")
+  categoryId        String?        @map("category_id")
+  uploadedById      String?        @map("uploaded_by")
+  title             String
+  description       String?
+  fileName          String         @map("file_name")
+  fileUrl           String         @map("file_url")
+  fileType          String?        @map("file_type")
+  fileSize          Int?           @map("file_size")
+  expiryDate        DateTime?      @map("expiry_date")
+  requiresSignature Boolean        @default(false) @map("requires_signature")
+  visibleToRoles    String[]       @map("visible_to_roles")
+  version           Int            @default(1)
+  status            DocumentStatus @default(ACTIVE)
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category     DocumentCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  uploadedBy   User?                 @relation("DocUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  signatures   DocumentSignature[]
   versions     OrgDocumentVersion[]
 
   @@index([organizationId])
+  @@index([organizationId, status])
   @@map("org_documents")
+}
+
+model DocumentSignature {
+  id           String   @id @default(cuid())
+  documentId   String   @map("document_id")
+  signedById   String   @map("signed_by_id")
+  signatureUrl String?  @map("signature_url")
+  signedAt     DateTime @default(now()) @map("signed_at")
+  ipAddress    String?  @map("ip_address")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  document OrgDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  signedBy User        @relation("DocSigner", fields: [signedById], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, signedById])
+  @@index([documentId])
+  @@map("document_signatures")
 }
 
 model OrgDocumentVersion {
@@ -1827,7 +1925,7 @@ model OrgDocumentVersion {
 
 
 // ============================================================================
-// ██  LAYER 3I: KPIs & REPORTS
+// LAYER 3I: KPIs & REPORTS
 // ============================================================================
 
 model KpiDefinition {
@@ -1904,7 +2002,7 @@ model GeneratedReport {
 
 
 // ============================================================================
-// ██  LAYER 3J: SYSTEM & MASTER DATA
+// LAYER 3J: SYSTEM & MASTER DATA
 // ============================================================================
 
 model AuditLog {
@@ -1914,8 +2012,10 @@ model AuditLog {
   action         String
   entityType     String   @map("entity_type")
   entityId       String   @map("entity_id")
+  description    String?
   oldValues      Json?    @map("old_values")
   newValues      Json?    @map("new_values")
+  metadata       Json?
   ipAddress      String?  @map("ip_address")
   userAgent      String?  @map("user_agent")
   createdAt      DateTime @default(now()) @map("created_at")
@@ -1930,15 +2030,18 @@ model AuditLog {
 }
 
 model ActivityLog {
-  id           String   @id @default(cuid())
-  userId       String?  @map("user_id")
-  activityType String   @map("activity_type")
-  description  String?
-  metadata     Json?
-  createdAt    DateTime @default(now()) @map("created_at")
+  id             String   @id @default(cuid())
+  organizationId String?  @map("organization_id")
+  userId         String?  @map("user_id")
+  activityType   String   @map("activity_type")
+  description    String?
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([organizationId])
   @@index([userId])
   @@index([createdAt])
   @@map("activity_logs")
@@ -1961,15 +2064,16 @@ model SystemLog {
 model OrgSetting {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
-  category       String
-  settingKey     String   @map("setting_key")
-  settingValue   String   @map("setting_value")
+  category       String?
+  key            String   @map("setting_key")
+  value          String   @map("setting_value")
+  updatedById    String?  @map("updated_by_id")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, settingKey])
+  @@unique([organizationId, key], map: "org_settings_organization_id_setting_key_key")
   @@map("org_settings")
 }
 

@@ -854,6 +854,7 @@ CREATE TABLE "public_holidays" (
     "holiday_date" TIMESTAMP(3) NOT NULL,
     "state" TEXT,
     "is_national" BOOLEAN NOT NULL DEFAULT false,
+    "is_recurring" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "public_holidays_pkey" PRIMARY KEY ("id")
@@ -895,6 +896,13 @@ CREATE TABLE "pay_groups" (
     "holiday_multiplier" DECIMAL(4,2) NOT NULL DEFAULT 2.5,
     "evening_loading_pct" DECIMAL(5,2) NOT NULL DEFAULT 0,
     "night_loading_pct" DECIMAL(5,2) NOT NULL DEFAULT 0,
+    "early_morning_loading_pct" DECIMAL(5,2) NOT NULL DEFAULT 0,
+    "overtime_multiplier" DECIMAL(4,2) NOT NULL DEFAULT 1.5,
+    "compound_loadings" BOOLEAN NOT NULL DEFAULT false,
+    "day_start_time" TEXT NOT NULL DEFAULT '06:00',
+    "evening_start_time" TEXT NOT NULL DEFAULT '20:00',
+    "night_start_time" TEXT NOT NULL DEFAULT '00:00',
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
