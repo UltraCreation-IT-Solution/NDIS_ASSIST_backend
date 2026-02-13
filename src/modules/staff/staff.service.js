@@ -47,6 +47,7 @@ export async function createStaff(organizationId, data) {
     firstName, 
     lastName, 
     phone,
+    hourlyRate, 
     ...staffData 
   } = data;
 
@@ -65,6 +66,7 @@ export async function createStaff(organizationId, data) {
       organizationId,
       userId,
       employeeId,
+      hourlyRate: hourlyRate ?? 0, 
       ...staffData
     });
   }
@@ -88,6 +90,7 @@ export async function createStaff(organizationId, data) {
     {
       organizationId,
       employeeId,
+      hourlyRate: hourlyRate ?? 0, 
       ...staffData
     },
     userData

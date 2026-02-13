@@ -45,7 +45,7 @@ export function validate(schema) {
 
     // Validate body
     if (schema.body) {
-      const { error, value } = schema.body.validate(req.body, options);
+      const { error, value } = schema.body.validate(req.body ?? {}, options);
       if (error) {
         errors.push(...formatJoiErrors(error, 'body'));
       } else {
@@ -73,6 +73,12 @@ export function validate(schema) {
       } else {
         // Express 5: req.query is read-only, update properties instead
         Object.keys(req.query).forEach(key => delete req.query[key]);
+        
+        // Force pagination params to integers (Prisma requires Int, not String)
+        if (value.page !== undefined) value.page = parseInt(value.page, 10);
+        if (value.limit !== undefined) value.limit = parseInt(value.limit, 10);
+        if (value.n !== undefined) value.n = parseInt(value.n, 10); // some endpoints use 'n' for count
+        
         Object.assign(req.query, value);
       }
     }

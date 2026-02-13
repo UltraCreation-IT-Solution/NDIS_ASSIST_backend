@@ -43,16 +43,18 @@ function getInviteExpiry(days = 7) {
  */
 export async function listUsers(organizationId, options = {}) {
   const { page = 1, limit = 20 } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
   
   const { data, total } = await userRepo.findAll(organizationId, options);
   
   return {
     data,
     pagination: {
-      page,
-      limit,
+      page: pageNum,
+      limit: limitNum,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limitNum),
     },
   };
 }
@@ -348,16 +350,18 @@ export async function resendInvite(organizationId, userId, invitedBy) {
  */
 export async function listInvitations(organizationId, options = {}) {
   const { page = 1, limit = 20 } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
   
   const { data, total } = await userRepo.listInvitations(organizationId, options);
   
   return {
     data,
     pagination: {
-      page,
-      limit,
+      page: pageNum,
+      limit: limitNum,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limitNum),
     },
   };
 }

@@ -6,6 +6,70 @@ import prisma from '../../config/database.js';
 // TEAM QUERIES
 // ============================================================================
 
+const teamSelect = {
+  id: true,
+  organizationId: true,
+  name: true,
+  description: true,
+  leaderId: true,
+  createdAt: true,
+  updatedAt: true,
+  _count: {
+    select: { members: true }
+  },
+  members: {
+    include: {
+      staff: {
+        select: {
+          id: true,
+          employeeId: true,
+          position: true,
+          department: true,
+          employmentStatus: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: { joinedAt: 'desc' }
+  }
+};
+
+async function attachLeaders(teams) {
+  const leaderIds = [...new Set(teams.map((team) => team.leaderId).filter(Boolean))];
+  if (leaderIds.length === 0) {
+    return teams.map((team) => ({ ...team, leader: null }));
+  }
+
+  const leaders = await prisma.staffMember.findMany({
+    where: { id: { in: leaderIds } },
+    select: {
+      id: true,
+      employeeId: true,
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true
+        }
+      }
+    }
+  });
+
+  const leaderById = new Map(leaders.map((leader) => [leader.id, leader]));
+  return teams.map((team) => ({
+    ...team,
+    leader: team.leaderId ? leaderById.get(team.leaderId) || null : null
+  }));
+}
+
 export async function findAll(organizationId, options = {}) {
   const {
     page = 1,
@@ -14,6 +78,8 @@ export async function findAll(organizationId, options = {}) {
     sortBy = 'createdAt',
     sortOrder = 'desc'
   } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -25,62 +91,34 @@ export async function findAll(organizationId, options = {}) {
     })
   };
 
-  const [data, total] = await Promise.all([
+  const [teams, total] = await Promise.all([
     prisma.team.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        leader: {
-          select: {
-            id: true,
-            employeeId: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true
-              }
-            }
-          }
-        },
-        _count: {
-          select: { members: true }
-        }
-      }
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
+      select: teamSelect
     }),
     prisma.team.count({ where })
   ]);
 
+  const data = await attachLeaders(teams);
   return { data, total };
 }
 
 export async function findById(organizationId, teamId) {
-  return prisma.team.findFirst({
+  const team = await prisma.team.findFirst({
     where: {
       id: teamId,
       organizationId
     },
-    include: {
-      leader: {
-        select: {
-          id: true,
-          employeeId: true,
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true
-            }
-          }
-        }
-      },
-      _count: {
-        select: { members: true }
-      }
-    }
+    select: teamSelect
   });
+  if (!team) {
+    return null;
+  }
+  const [withLeader] = await attachLeaders([team]);
+  return withLeader;
 }
 
 export async function findByName(organizationId, name) {
@@ -93,55 +131,25 @@ export async function findByName(organizationId, name) {
 }
 
 export async function create(data) {
-  return prisma.team.create({
+  const team = await prisma.team.create({
     data,
-    include: {
-      leader: {
-        select: {
-          id: true,
-          employeeId: true,
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true
-            }
-          }
-        }
-      },
-      _count: {
-        select: { members: true }
-      }
-    }
+    select: teamSelect
   });
+  const [withLeader] = await attachLeaders([team]);
+  return withLeader;
 }
 
 export async function update(organizationId, teamId, data) {
-  return prisma.team.update({
+  const team = await prisma.team.update({
     where: {
       id: teamId,
       organizationId
     },
     data,
-    include: {
-      leader: {
-        select: {
-          id: true,
-          employeeId: true,
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true
-            }
-          }
-        }
-      },
-      _count: {
-        select: { members: true }
-      }
-    }
+    select: teamSelect
   });
+  const [withLeader] = await attachLeaders([team]);
+  return withLeader;
 }
 
 export async function deleteTeam(organizationId, teamId) {
@@ -174,6 +182,8 @@ export async function findAllMembers(teamId, options = {}) {
     sortBy = 'joinedAt',
     sortOrder = 'desc'
   } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     teamId,
@@ -201,8 +211,8 @@ export async function findAllMembers(teamId, options = {}) {
     prisma.teamMember.findMany({
       where,
       orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
       include: {
         staff: {
           select: {

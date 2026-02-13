@@ -7,9 +7,9 @@ import prisma from '../../config/database.js';
 // ============================================================================
 
 export async function findAllShifts(organizationId, options = {}) {
+  const page = Number(options.page) || 1;
+const limit = Number(options.limit) || 20;
   const {
-    page = 1,
-    limit = 20,
     search,
     status,
     staffId,
@@ -196,7 +196,9 @@ export async function findLastClockEvent(shiftId, staffId) {
 // ============================================================================
 
 export async function findShiftSwaps(organizationId, options = {}) {
-  const { page = 1, limit = 20, status } = options;
+    const page = Number(options.page) || 1;
+  const limit = Number(options.limit) || 20;
+  const {  status } = options;
 
   const where = {
     shift: { organizationId },
@@ -264,7 +266,9 @@ export async function updateShiftSwap(id, data) {
 // ============================================================================
 
 export async function findRecurringPatterns(organizationId, options = {}) {
-  const { page = 1, limit = 20, isActive, clientId, staffId } = options;
+    const page = Number(options.page) || 1;
+  const limit = Number(options.limit) || 20;
+  const { isActive, clientId, staffId } = options;
 
   const where = {
     organizationId,
@@ -317,7 +321,9 @@ export async function updateRecurringPattern(id, data) {
 // ============================================================================
 
 export async function findServiceTypes(organizationId, options = {}) {
-  const { page = 1, limit = 50, isActive, search } = options;
+    const page = Number(options.page) || 1;
+  const limit = Number(options.limit) || 20;
+  const { isActive, search } = options;
 
   const where = {
     organizationId,

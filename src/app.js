@@ -36,12 +36,17 @@ import formsRoutes from './modules/forms/forms.routes.js';
 import documentsRoutes from './modules/documents/documents.routes.js';
 import reportsRoutes from './modules/reports/reports.routes.js';
 import systemRoutes from './modules/system/system.routes.js';
+import { ensurePaginationInts } from './middleware/pagination.middleware.js';
 // Error handlers
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+
 
 // Create Express app
 const app = express();
 
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(ensurePaginationInts);
 // ... rest of the file stays the same
 
 // ══════════════════════════════════════════════════════════════

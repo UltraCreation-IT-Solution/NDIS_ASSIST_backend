@@ -7,13 +7,22 @@ import { PAGINATION } from '../../config/constants.js';
 // SHARED SCHEMAS
 // ============================================================================
 
+// CUID format: starts with 'c', 25 characters, lowercase alphanumeric
+const cuidPattern = /^c[a-z0-9]{24}$/;
+
 const teamIdParam = Joi.object({
-  teamId: Joi.string().uuid().required()
+  teamId: Joi.string().pattern(cuidPattern).required().messages({
+    'string.pattern.base': 'Invalid team ID format'
+  })
 });
 
 const teamMemberParams = Joi.object({
-  teamId: Joi.string().uuid().required(),
-  staffId: Joi.string().uuid().required()
+  teamId: Joi.string().pattern(cuidPattern).required().messages({
+    'string.pattern.base': 'Invalid team ID format'
+  }),
+  staffId: Joi.string().pattern(cuidPattern).required().messages({
+    'string.pattern.base': 'Invalid staff ID format'
+  })
 });
 
 const paginationQuery = Joi.object({
@@ -29,7 +38,9 @@ const paginationQuery = Joi.object({
 
 export const listTeamsSchema = {
   query: paginationQuery.keys({
-    search: Joi.string().trim().max(100).optional(),
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(20),
+    search: Joi.string().trim().max(100).allow('', null).optional(),
     sortBy: Joi.string().valid('createdAt', 'name').default('createdAt')
   })
 };
@@ -41,8 +52,10 @@ export const getTeamSchema = {
 export const createTeamSchema = {
   body: Joi.object({
     name: Joi.string().trim().min(1).max(100).required(),
-    description: Joi.string().trim().max(500).optional().allow(''),
-    leaderId: Joi.string().uuid().optional() // Staff ID of team leader
+    description: Joi.string().trim().max(500).allow('', null).optional(),
+    leaderId: Joi.string().pattern(cuidPattern).allow('', null).optional().messages({
+      'string.pattern.base': 'Invalid leader ID format'
+    })
   })
 };
 
@@ -50,8 +63,10 @@ export const updateTeamSchema = {
   params: teamIdParam,
   body: Joi.object({
     name: Joi.string().trim().min(1).max(100).optional(),
-    description: Joi.string().trim().max(500).optional().allow(''),
-    leaderId: Joi.string().uuid().optional().allow(null)
+    description: Joi.string().trim().max(500).allow('', null).optional(),
+    leaderId: Joi.string().pattern(cuidPattern).allow('', null).optional().messages({
+      'string.pattern.base': 'Invalid leader ID format'
+    })
   }).min(1)
 };
 
@@ -66,14 +81,16 @@ export const deleteTeamSchema = {
 export const listMembersSchema = {
   params: teamIdParam,
   query: paginationQuery.keys({
-    search: Joi.string().trim().max(100).optional()
+    search: Joi.string().trim().max(100).allow('', null).optional()
   })
 };
 
 export const addMemberSchema = {
   params: teamIdParam,
   body: Joi.object({
-    staffId: Joi.string().uuid().required()
+    staffId: Joi.string().pattern(cuidPattern).required().messages({
+      'string.pattern.base': 'Invalid staff ID format'
+    })
   })
 };
 

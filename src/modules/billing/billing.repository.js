@@ -8,6 +8,8 @@ import prisma from '../../config/database.js';
 
 export async function findAllInvoices(organizationId, options = {}) {
   const { page = 1, limit = 20, search, status, clientId, isNdisInvoice, dateFrom, dateTo, sortBy = 'invoiceDate', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -37,8 +39,8 @@ export async function findAllInvoices(organizationId, options = {}) {
         _count: { select: { lineItems: true, payments: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.invoice.count({ where }),
   ]);
@@ -114,6 +116,8 @@ export async function deleteLineItemsByInvoice(invoiceId) {
 
 export async function findAllPayments(organizationId, options = {}) {
   const { page = 1, limit = 20, status, clientId, invoiceId, sortBy = 'paymentDate', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -130,8 +134,8 @@ export async function findAllPayments(organizationId, options = {}) {
         client: { select: { id: true, firstName: true, lastName: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.payment.count({ where }),
   ]);
@@ -163,6 +167,8 @@ export async function updatePayment(id, data) {
 
 export async function findAllCreditNotes(organizationId, options = {}) {
   const { page = 1, limit = 20, status, clientId, invoiceId, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -179,8 +185,8 @@ export async function findAllCreditNotes(organizationId, options = {}) {
         client: { select: { id: true, firstName: true, lastName: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.creditNote.count({ where }),
   ]);

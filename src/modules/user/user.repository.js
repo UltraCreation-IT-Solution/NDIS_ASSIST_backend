@@ -24,6 +24,8 @@ export async function findAll(organizationId, options = {}) {
     sortBy = 'createdAt',
     sortOrder = 'desc',
   } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -58,12 +60,15 @@ export async function findAll(organizationId, options = {}) {
           select: { id: true, name: true },
         },
         staffProfile: {
-          select: { id: true, firstName: true, lastName: true },
+          select: {
+            id: true,
+            user: { select: { firstName: true, lastName: true } },
+          },
         },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.user.count({ where }),
   ]);
@@ -247,6 +252,8 @@ export async function updateInvitation(id, data) {
  */
 export async function listInvitations(organizationId, options = {}) {
   const { status, page = 1, limit = 20 } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -257,8 +264,8 @@ export async function listInvitations(organizationId, options = {}) {
     prisma.userInvitation.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.userInvitation.count({ where }),
   ]);

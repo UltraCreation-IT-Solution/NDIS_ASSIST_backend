@@ -75,8 +75,16 @@ export async function getOrganization(id) {
   return organization;
 }
 
-export async function createOrganization(data) {
+export async function createOrganization(data = {}) {
+  if (!data || typeof data !== 'object') {
+    throw new BadRequestError('Invalid request body');
+  }
+
   const { name, slug: customSlug, abn, ndisRegistrationNo, ...rest } = data;
+
+  if (!name) {
+    throw new BadRequestError('Organization name is required');
+  }
   
   // Generate or validate slug
   let slug;

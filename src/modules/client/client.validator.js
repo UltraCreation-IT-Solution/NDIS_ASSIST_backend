@@ -48,7 +48,7 @@ export const listClientsSchema = {
     status: Joi.string().valid(...CLIENT_STATUSES).optional(),
     state: Joi.string().valid(...AU_STATES).optional(),
     hasAgedCare: Joi.boolean().optional(),
-    sortBy: Joi.string().valid('createdAt', 'firstName', 'lastName', 'status', 'ndisNumber').default('createdAt'),
+    sortBy: Joi.string().valid('createdAt', 'updatedAt', 'firstName', 'lastName', 'status', 'ndisNumber').default('createdAt'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
   }),
 };

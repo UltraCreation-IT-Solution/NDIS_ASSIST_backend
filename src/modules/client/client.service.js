@@ -13,7 +13,12 @@ import {
 
 export async function listClients(organizationId, options = {}) {
   const { page = 1, limit = 20 } = options;
-  const { data, total } = await repo.findAll(organizationId, options);
+  const parsedOptions = {
+    ...options,
+    page: parseInt(page, 10) || 1,
+    limit: parseInt(limit, 10) || 20,
+  };
+  const { data, total } = await repo.findAll(organizationId, parsedOptions);
 
   return {
     data,

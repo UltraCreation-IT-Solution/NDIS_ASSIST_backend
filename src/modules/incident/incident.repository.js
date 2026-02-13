@@ -5,6 +5,8 @@ import prisma from '../../config/database.js';
 // Incidents
 export async function findAllIncidents(organizationId, options = {}) {
   const { page = 1, limit = 20, search, status, severity, incidentType, clientId, staffId, dateFrom, dateTo, sortBy = 'dateReported', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -32,8 +34,8 @@ export async function findAllIncidents(organizationId, options = {}) {
         _count: { select: { followUps: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.incident.count({ where }),
   ]);
@@ -69,6 +71,8 @@ export async function updateFollowUp(id, data) { return prisma.incidentFollowUp.
 // Complaints
 export async function findAllComplaints(organizationId, options = {}) {
   const { page = 1, limit = 20, search, status, complaintType, clientId, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -87,8 +91,8 @@ export async function findAllComplaints(organizationId, options = {}) {
       where,
       include: { client: { select: { id: true, firstName: true, lastName: true } } },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.complaint.count({ where }),
   ]);

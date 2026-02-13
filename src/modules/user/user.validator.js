@@ -21,9 +21,9 @@ export const listUsersSchema = {
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(20),
-    search: Joi.string().trim().max(100).optional(),
-    role: Joi.string().valid('ORG_OWNER', ...assignableRoles).optional(),
-    status: Joi.string().valid('ACTIVE', 'INVITED', 'DISABLED', 'LOCKED').optional(),
+    search: Joi.string().trim().max(100).allow('', null).optional(),
+    role: Joi.string().valid('ORG_OWNER', ...assignableRoles).allow('', null).optional(),
+    status: Joi.string().valid('ACTIVE', 'INVITED', 'DISABLED', 'LOCKED').allow('', null).optional(),
     sortBy: Joi.string().valid('createdAt', 'firstName', 'lastName', 'email', 'role', 'status').default('createdAt'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
   }),
@@ -51,7 +51,7 @@ export const inviteUserSchema = {
       .messages({ 'any.required': 'First name is required' }),
     lastName: Joi.string().trim().min(1).max(100).required()
       .messages({ 'any.required': 'Last name is required' }),
-    phone: Joi.string().trim().pattern(/^(\+?61|0)[2-478](?:[ -]?[0-9]){8}$/).optional().allow('')
+    phone: Joi.string().pattern(/^(\+?61|0)[2-478](?:[ -]?[0-9]){8}$/).allow('', null).optional()
       .messages({ 'string.pattern.base': 'Please provide a valid Australian phone number' }),
   }),
 };
@@ -73,12 +73,13 @@ export const updateUserSchema = {
     id: Joi.string().required(),
   }),
   body: Joi.object({
-    firstName: Joi.string().trim().min(1).max(100).optional(),
-    lastName: Joi.string().trim().min(1).max(100).optional(),
-    phone: Joi.string().trim().pattern(/^(\+?61|0)[2-478](?:[ -]?[0-9]){8}$/).optional().allow('', null),
-    role: Joi.string().valid(...assignableRoles).optional()
+    firstName: Joi.string().trim().min(1).max(100).allow('', null).optional(),
+    lastName: Joi.string().trim().min(1).max(100).allow('', null).optional(),
+    phone: Joi.string().pattern(/^(\+?61|0)[2-478](?:[ -]?[0-9]){8}$/).allow('', null).optional()
+      .messages({ 'string.pattern.base': 'Please provide a valid Australian phone number' }),
+    role: Joi.string().valid(...assignableRoles).allow('', null).optional()
       .messages({ 'any.only': `Role must be one of: ${assignableRoles.join(', ')}` }),
-    customRoleId: Joi.string().optional().allow(null),
+    customRoleId: Joi.string().allow('', null).optional(),
   }).min(1).messages({
     'object.min': 'At least one field is required to update',
   }),
@@ -94,7 +95,7 @@ export const listInvitationsSchema = {
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(20),
-    status: Joi.string().valid('PENDING', 'ACCEPTED', 'EXPIRED', 'CANCELLED').optional(),
+    status: Joi.string().valid('PENDING', 'ACCEPTED', 'EXPIRED', 'CANCELLED').allow('', null).optional(),
   }),
 };
 

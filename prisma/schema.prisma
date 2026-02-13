@@ -657,6 +657,7 @@ model User {
   complaintsReported Complaint[]         @relation("ComplaintReporter")
   auditLogs          AuditLog[]
   activityLogs       ActivityLog[]
+  performanceReviewsGiven StaffPerformanceReview[] @relation("PerformanceReviewReviewer")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -878,7 +879,8 @@ model StaffPerformanceReview {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
-  staff StaffMember @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staff    StaffMember       @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  reviewer User?             @relation("PerformanceReviewReviewer", fields: [reviewerId], references: [id])
 
   @@index([staffId])
   @@map("staff_performance_reviews")

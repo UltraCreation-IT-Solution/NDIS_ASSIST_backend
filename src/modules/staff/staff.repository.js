@@ -18,6 +18,10 @@ export async function findAll(organizationId, options = {}) {
     sortOrder = 'desc'
   } = options;
 
+  // Parse to integers (query params come as strings)
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
   const where = {
     organizationId,
     ...(status && { employmentStatus: status }),
@@ -53,8 +57,8 @@ export async function findAll(organizationId, options = {}) {
     prisma.staffMember.findMany({
       where,
       orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
       include: {
         user: {
           select: {
@@ -248,6 +252,9 @@ export async function findAllSkills(staffId, options = {}) {
     sortOrder = 'desc'
   } = options;
 
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
   const where = {
     staffId,
     ...(certified !== undefined && { certified }),
@@ -258,8 +265,8 @@ export async function findAllSkills(staffId, options = {}) {
     prisma.staffSkill.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum
     }),
     prisma.staffSkill.count({ where })
   ]);
@@ -322,6 +329,9 @@ export async function findAllDocuments(staffId, options = {}) {
     sortOrder = 'desc'
   } = options;
 
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
   const where = {
     staffId,
     ...(status && { status }),
@@ -332,8 +342,8 @@ export async function findAllDocuments(staffId, options = {}) {
     prisma.staffDocument.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum
     }),
     prisma.staffDocument.count({ where })
   ]);
@@ -425,6 +435,9 @@ export async function findAllLeave(staffId, options = {}) {
     sortOrder = 'desc'
   } = options;
 
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
   const where = {
     staffId,
     ...(status && { status }),
@@ -437,8 +450,8 @@ export async function findAllLeave(staffId, options = {}) {
     prisma.staffLeaveRequest.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
       include: {
         reviewer: {
           select: {
@@ -538,6 +551,9 @@ export async function findAllReviews(staffId, options = {}) {
     sortOrder = 'desc'
   } = options;
 
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
   const where = {
     staffId,
     ...(status && { status }),
@@ -549,8 +565,8 @@ export async function findAllReviews(staffId, options = {}) {
     prisma.staffPerformanceReview.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
       include: {
         reviewer: {
           select: {
@@ -633,6 +649,9 @@ export async function findAllTraining(staffId, options = {}) {
     sortOrder = 'desc'
   } = options;
 
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
   const now = new Date();
   
   const where = {
@@ -651,8 +670,8 @@ export async function findAllTraining(staffId, options = {}) {
     prisma.staffTrainingRecord.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum
     }),
     prisma.staffTrainingRecord.count({ where })
   ]);
