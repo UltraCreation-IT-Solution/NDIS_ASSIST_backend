@@ -423,6 +423,63 @@ export async function setAvailability(staffId, availabilityData) {
 // LEAVE QUERIES
 // ============================================================================
 
+/**
+ * Find all leave requests across the organization (for managers)
+ */
+export async function findAllLeaveForOrg(organizationId, options = {}) {
+  const {
+    page = 1,
+    limit = 20,
+    status,
+    leaveType,
+    staffId,
+    startDate,
+    endDate,
+    sortBy = 'createdAt',
+    sortOrder = 'desc'
+  } = options;
+
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+
+  const where = {
+    staff: {
+      organizationId
+    },
+    ...(status && { status }),
+    ...(leaveType && { leaveType }),
+    ...(staffId && { staffId }),
+    ...(startDate && { startDate: { gte: new Date(startDate) } }),
+    ...(endDate && { endDate: { lte: new Date(endDate) } })
+  };
+
+  const [data, total] = await Promise.all([
+    prisma.staffLeaveRequest.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
+      include: {
+        staff: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    }),
+    prisma.staffLeaveRequest.count({ where })
+  ]);
+
+  return { data, total };
+}
+
 export async function findAllLeave(staffId, options = {}) {
   const {
     page = 1,
@@ -453,11 +510,15 @@ export async function findAllLeave(staffId, options = {}) {
       skip: (pageNum - 1) * limitNum,
       take: limitNum,
       include: {
-        reviewer: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true
+        staff: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
+            }
           }
         }
       }
@@ -475,11 +536,15 @@ export async function findLeaveById(staffId, leaveId) {
       staffId
     },
     include: {
-      reviewer: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true
+      staff: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
         }
       }
     }
@@ -506,11 +571,15 @@ export async function createLeave(data) {
   return prisma.staffLeaveRequest.create({
     data,
     include: {
-      reviewer: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true
+      staff: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
         }
       }
     }
@@ -525,11 +594,15 @@ export async function updateLeave(staffId, leaveId, data) {
     },
     data,
     include: {
-      reviewer: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true
+      staff: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
         }
       }
     }
@@ -770,6 +843,7 @@ export default {
   setAvailability,
   
   // Leave
+  findAllLeaveForOrg,
   findAllLeave,
   findLeaveById,
   findOverlappingLeave,

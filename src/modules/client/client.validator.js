@@ -68,8 +68,10 @@ export const createClientSchema = {
       .messages({ 'string.pattern.base': 'Phone must be a valid Australian phone number' }),
     email: Joi.string().email().optional().allow('', null),
     address: Joi.string().trim().max(255).optional().allow('', null),
+    addressLine1: Joi.string().trim().max(255).optional().allow('', null),
+    addressLine2: Joi.string().trim().max(255).optional().allow('', null),
     suburb: Joi.string().trim().max(100).optional().allow('', null),
-    state: Joi.string().valid(...AU_STATES).optional().allow('', null),
+    state: Joi.string().uppercase().valid(...AU_STATES).optional().allow('', null),
     postcode: Joi.string().pattern(AU_POSTCODE).optional().allow('', null)
       .messages({ 'string.pattern.base': 'Postcode must be 4 digits' }),
     // NDIS fields
@@ -88,7 +90,23 @@ export const createClientSchema = {
     userId: Joi.string().optional().allow(null),
     status: Joi.string().valid(...CLIENT_STATUSES).default('ACTIVE'),
     onboardedAt: Joi.date().iso().optional().allow(null),
-  }),
+  })
+    .rename('first_name', 'firstName', { ignoreUndefined: true })
+    .rename('last_name', 'lastName', { ignoreUndefined: true })
+    .rename('preferred_name', 'preferredName', { ignoreUndefined: true })
+    .rename('date_of_birth', 'dateOfBirth', { ignoreUndefined: true })
+    .rename('address_line_1', 'addressLine1', { ignoreUndefined: true })
+    .rename('address_line_2', 'addressLine2', { ignoreUndefined: true })
+    .rename('ndis_number', 'ndisNumber', { ignoreUndefined: true })
+    .rename('ndis_plan_start_date', 'ndisPlanStartDate', { ignoreUndefined: true })
+    .rename('ndis_plan_end_date', 'ndisPlanEndDate', { ignoreUndefined: true })
+    .rename('ndis_plan_manager', 'ndisPlanManager', { ignoreUndefined: true })
+    .rename('ndis_plan_manager_email', 'ndisPlanManagerEmail', { ignoreUndefined: true })
+    .rename('ndis_plan_manager_phone', 'ndisPlanManagerPhone', { ignoreUndefined: true })
+    .rename('has_aged_care', 'hasAgedCare', { ignoreUndefined: true })
+    .rename('aged_care_package_level', 'agedCarePackageLevel', { ignoreUndefined: true })
+    .rename('aged_care_reference_no', 'agedCareReferenceNo', { ignoreUndefined: true })
+    .rename('onboarded_at', 'onboardedAt', { ignoreUndefined: true }),
 };
 
 export const updateClientSchema = {
@@ -102,8 +120,10 @@ export const updateClientSchema = {
     phone: Joi.string().pattern(AU_PHONE).optional().allow('', null),
     email: Joi.string().email().optional().allow('', null),
     address: Joi.string().trim().max(255).optional().allow('', null),
+    addressLine1: Joi.string().trim().max(255).optional().allow('', null),
+    addressLine2: Joi.string().trim().max(255).optional().allow('', null),
     suburb: Joi.string().trim().max(100).optional().allow('', null),
-    state: Joi.string().valid(...AU_STATES).optional().allow('', null),
+    state: Joi.string().uppercase().valid(...AU_STATES).optional().allow('', null),
     postcode: Joi.string().pattern(AU_POSTCODE).optional().allow('', null),
     ndisNumber: Joi.string().pattern(NDIS_NUMBER).optional().allow('', null),
     ndisPlanStartDate: Joi.date().iso().optional().allow(null),
@@ -117,7 +137,25 @@ export const updateClientSchema = {
     status: Joi.string().valid(...CLIENT_STATUSES).optional(),
     onboardedAt: Joi.date().iso().optional().allow(null),
     dischargedAt: Joi.date().iso().optional().allow(null),
-  }).min(1),
+  })
+    .rename('first_name', 'firstName', { ignoreUndefined: true })
+    .rename('last_name', 'lastName', { ignoreUndefined: true })
+    .rename('preferred_name', 'preferredName', { ignoreUndefined: true })
+    .rename('date_of_birth', 'dateOfBirth', { ignoreUndefined: true })
+    .rename('address_line_1', 'addressLine1', { ignoreUndefined: true })
+    .rename('address_line_2', 'addressLine2', { ignoreUndefined: true })
+    .rename('ndis_number', 'ndisNumber', { ignoreUndefined: true })
+    .rename('ndis_plan_start_date', 'ndisPlanStartDate', { ignoreUndefined: true })
+    .rename('ndis_plan_end_date', 'ndisPlanEndDate', { ignoreUndefined: true })
+    .rename('ndis_plan_manager', 'ndisPlanManager', { ignoreUndefined: true })
+    .rename('ndis_plan_manager_email', 'ndisPlanManagerEmail', { ignoreUndefined: true })
+    .rename('ndis_plan_manager_phone', 'ndisPlanManagerPhone', { ignoreUndefined: true })
+    .rename('has_aged_care', 'hasAgedCare', { ignoreUndefined: true })
+    .rename('aged_care_package_level', 'agedCarePackageLevel', { ignoreUndefined: true })
+    .rename('aged_care_reference_no', 'agedCareReferenceNo', { ignoreUndefined: true })
+    .rename('onboarded_at', 'onboardedAt', { ignoreUndefined: true })
+    .rename('discharged_at', 'dischargedAt', { ignoreUndefined: true })
+    .min(1),
 };
 
 export const deleteClientSchema = {

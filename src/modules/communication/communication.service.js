@@ -8,7 +8,8 @@ import { NotFoundError, BadRequestError, ForbiddenError } from '../../shared/err
 // ============================================================================
 
 export async function listMessages(organizationId, userId, options = {}) {
-  const { page = 1, limit = 20 } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
   const { data, total } = await repo.findAllMessages(organizationId, userId, options);
   return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
@@ -65,7 +66,8 @@ export async function getUnreadCount(organizationId, userId) {
 // ============================================================================
 
 export async function listAnnouncements(organizationId, options = {}) {
-  const { page = 1, limit = 20 } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
   const { data, total } = await repo.findAllAnnouncements(organizationId, options);
   return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
@@ -102,7 +104,8 @@ export async function updateAnnouncement(organizationId, id, data) {
 // ============================================================================
 
 export async function listNotifications(organizationId, userId, options = {}) {
-  const { page = 1, limit = 20 } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
   const { data, total } = await repo.findAllNotifications(organizationId, userId, options);
   return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }

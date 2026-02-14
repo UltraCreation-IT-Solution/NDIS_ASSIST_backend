@@ -250,6 +250,109 @@ export async function findAuditLogs(options = {}) {
 }
 
 // ============================================================================
+// PLATFORM SETTINGS QUERIES
+// ============================================================================
+
+/**
+ * Find all platform settings
+ * 
+ * @param {object} options - Query options
+ * @returns {Promise<object[]>}
+ */
+export async function findAllSettings(options = {}) {
+  const { category } = options;
+
+  return prisma.platformSetting.findMany({
+    where: category ? { category } : undefined,
+    orderBy: [{ category: 'asc' }, { key: 'asc' }],
+  });
+}
+
+/**
+ * Find setting by key
+ * 
+ * @param {string} key - Setting key
+ * @returns {Promise<object|null>}
+ */
+export async function findSettingByKey(key) {
+  return prisma.platformSetting.findUnique({
+    where: { key },
+  });
+}
+
+/**
+ * Upsert a setting (create or update)
+ * 
+ * @param {string} key - Setting key
+ * @param {string} value - Setting value
+ * @param {object} options - Additional options
+ * @returns {Promise<object>}
+ */
+export async function upsertSetting(key, value, options = {}) {
+  const { category, description, updatedById } = options;
+
+  return prisma.platformSetting.upsert({
+    where: { key },
+    update: {
+      value,
+      ...(category !== undefined && { category }),
+      ...(description !== undefined && { description }),
+      ...(updatedById && { updatedById }),
+    },
+    create: {
+      key,
+      value,
+      category: category || null,
+      description: description || null,
+      updatedById: updatedById || null,
+    },
+  });
+}
+
+/**
+ * Bulk upsert settings
+ * 
+ * @param {Array} settings - Array of { key, value, category?, description? }
+ * @param {string} updatedById - Admin ID who made the update
+ * @returns {Promise<number>} - Number of settings updated
+ */
+export async function bulkUpsertSettings(settings, updatedById = null) {
+  const operations = settings.map(({ key, value, category, description }) =>
+    prisma.platformSetting.upsert({
+      where: { key },
+      update: {
+        value,
+        ...(category !== undefined && { category }),
+        ...(description !== undefined && { description }),
+        ...(updatedById && { updatedById }),
+      },
+      create: {
+        key,
+        value,
+        category: category || null,
+        description: description || null,
+        updatedById,
+      },
+    })
+  );
+
+  const results = await prisma.$transaction(operations);
+  return results.length;
+}
+
+/**
+ * Delete a setting
+ * 
+ * @param {string} key - Setting key
+ * @returns {Promise<object>}
+ */
+export async function deleteSetting(key) {
+  return prisma.platformSetting.delete({
+    where: { key },
+  });
+}
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 
@@ -266,4 +369,10 @@ export default {
   deleteExpiredSessions,
   // Audit logs
   findAuditLogs,
+  // Settings
+  findAllSettings,
+  findSettingByKey,
+  upsertSetting,
+  bulkUpsertSettings,
+  deleteSetting,
 };

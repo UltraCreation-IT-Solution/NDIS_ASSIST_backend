@@ -140,6 +140,66 @@ export async function getAuditLogs(req, res) {
 }
 
 // ============================================================================
+// PLATFORM SETTINGS
+// ============================================================================
+
+/**
+ * GET /api/v1/platform/settings
+ * 
+ * Get all platform settings
+ */
+export async function listSettings(req, res) {
+  const settings = await platformService.getAllSettings(req.query);
+  return success(res, settings, 'Platform settings retrieved');
+}
+
+/**
+ * GET /api/v1/platform/settings/:key
+ * 
+ * Get single setting by key
+ */
+export async function getSetting(req, res) {
+  const setting = await platformService.getSetting(req.params.key);
+  return success(res, setting, 'Setting retrieved');
+}
+
+/**
+ * PUT /api/v1/platform/settings/:key
+ * 
+ * Update single setting
+ */
+export async function updateSetting(req, res) {
+  const { value, category, description } = req.body;
+  const setting = await platformService.updateSetting(req.params.key, value, {
+    category,
+    description,
+    updatedById: req.admin.id,
+  });
+  return success(res, setting, 'Setting updated');
+}
+
+/**
+ * PUT /api/v1/platform/settings/bulk
+ * 
+ * Update multiple settings at once
+ */
+export async function updateBulkSettings(req, res) {
+  const { settings } = req.body;
+  const result = await platformService.updateBulkSettings(settings, req.admin.id);
+  return success(res, result, `${result.count} settings updated`);
+}
+
+/**
+ * DELETE /api/v1/platform/settings/:key
+ * 
+ * Delete a setting
+ */
+export async function deleteSetting(req, res) {
+  const result = await platformService.deleteSetting(req.params.key);
+  return success(res, result, 'Setting deleted');
+}
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 
@@ -150,4 +210,10 @@ export default {
   logoutAllDevices,
   healthCheck,
   getAuditLogs,
+  // Settings
+  listSettings,
+  getSetting,
+  updateSetting,
+  updateBulkSettings,
+  deleteSetting,
 };

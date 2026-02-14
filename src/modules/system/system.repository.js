@@ -39,6 +39,8 @@ export async function deleteSetting(organizationId, key) {
 
 export async function findAllAuditLogs(organizationId, options = {}) {
   const { page = 1, limit = 20, action, entityType, entityId, userId, dateFrom, dateTo, sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -61,8 +63,8 @@ export async function findAllAuditLogs(organizationId, options = {}) {
         user: { select: { id: true, firstName: true, lastName: true, email: true } },
       },
       orderBy: { createdAt: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.auditLog.count({ where }),
   ]);
@@ -80,6 +82,8 @@ export async function createAuditLog(data) {
 
 export async function findAllActivityLogs(organizationId, options = {}) {
   const { page = 1, limit = 20, userId, activityType, dateFrom, dateTo } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -100,8 +104,8 @@ export async function findAllActivityLogs(organizationId, options = {}) {
         user: { select: { id: true, firstName: true, lastName: true } },
       },
       orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.activityLog.count({ where }),
   ]);

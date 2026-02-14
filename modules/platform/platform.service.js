@@ -294,6 +294,76 @@ export async function getAuditLogs(options = {}) {
 }
 
 // ============================================================================
+// PLATFORM SETTINGS
+// ============================================================================
+
+/**
+ * Get all platform settings
+ * 
+ * @param {object} options - Query options
+ * @returns {Promise<object[]>} - Array of settings
+ */
+export async function getAllSettings(options = {}) {
+  return platformRepo.findAllSettings(options);
+}
+
+/**
+ * Get a single setting by key
+ * 
+ * @param {string} key - Setting key
+ * @returns {Promise<object>} - Setting object
+ * @throws {NotFoundError} - If setting not found
+ */
+export async function getSetting(key) {
+  const setting = await platformRepo.findSettingByKey(key);
+  if (!setting) {
+    throw new NotFoundError(`Setting '${key}' not found`);
+  }
+  return setting;
+}
+
+/**
+ * Update a single setting
+ * 
+ * @param {string} key - Setting key
+ * @param {string} value - Setting value
+ * @param {object} options - Additional options
+ * @returns {Promise<object>} - Updated setting
+ */
+export async function updateSetting(key, value, options = {}) {
+  return platformRepo.upsertSetting(key, value, options);
+}
+
+/**
+ * Update multiple settings at once
+ * 
+ * @param {Array} settings - Array of { key, value, category?, description? }
+ * @param {string} adminId - Admin ID making the update
+ * @returns {Promise<object>} - { success: true, count: number }
+ */
+export async function updateBulkSettings(settings, adminId = null) {
+  const count = await platformRepo.bulkUpsertSettings(settings, adminId);
+  return { success: true, count };
+}
+
+/**
+ * Delete a setting
+ * 
+ * @param {string} key - Setting key
+ * @returns {Promise<object>} - { success: true }
+ */
+export async function deleteSetting(key) {
+  // Check if setting exists
+  const setting = await platformRepo.findSettingByKey(key);
+  if (!setting) {
+    throw new NotFoundError(`Setting '${key}' not found`);
+  }
+  
+  await platformRepo.deleteSetting(key);
+  return { success: true };
+}
+
+// ============================================================================
 // EXPORT ALL SERVICES
 // ============================================================================
 
@@ -311,4 +381,10 @@ export default {
   getProfile,
   logoutAllDevices,
   getAuditLogs,
+  // Settings
+  getAllSettings,
+  getSetting,
+  updateSetting,
+  updateBulkSettings,
+  deleteSetting,
 };

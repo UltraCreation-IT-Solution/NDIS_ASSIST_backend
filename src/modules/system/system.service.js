@@ -69,7 +69,8 @@ export async function resetSetting(organizationId, key) {
 // ============================================================================
 
 export async function listAuditLogs(organizationId, options = {}) {
-  const { page = 1, limit = 20 } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
   const { data, total } = await repo.findAllAuditLogs(organizationId, options);
   return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
@@ -88,7 +89,8 @@ export async function logAudit(organizationId, data) {
 // ============================================================================
 
 export async function listActivityLogs(organizationId, options = {}) {
-  const { page = 1, limit = 20 } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
   const { data, total } = await repo.findAllActivityLogs(organizationId, options);
   return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }

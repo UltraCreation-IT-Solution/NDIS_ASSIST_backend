@@ -22,7 +22,7 @@ export const listInvoicesSchema = {
     isNdisInvoice: Joi.boolean().optional(),
     dateFrom: Joi.date().iso().optional(),
     dateTo: Joi.date().iso().optional(),
-    sortBy: Joi.string().valid('invoiceDate', 'dueDate', 'totalAmount', 'createdAt').default('invoiceDate'),
+    sortBy: Joi.string().valid('invoiceDate', 'dueDate', 'totalAmount', 'createdAt', 'updatedAt').default('invoiceDate'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
   }),
 };

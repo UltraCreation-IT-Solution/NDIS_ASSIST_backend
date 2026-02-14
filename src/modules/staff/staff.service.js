@@ -366,6 +366,35 @@ export async function setAvailability(organizationId, staffId, data) {
 // LEAVE SERVICES
 // ============================================================================
 
+/**
+ * List all leave requests across the organization (for managers)
+ */
+export async function listAllLeave(organizationId, options = {}) {
+  const { page = PAGINATION.DEFAULT_PAGE, limit = PAGINATION.DEFAULT_LIMIT } = options;
+  const { data, total } = await repo.findAllLeaveForOrg(organizationId, options);
+
+  // Transform data to include staff name
+  const transformedData = data.map(leave => ({
+    ...leave,
+    staffName: leave.staff?.user 
+      ? `${leave.staff.user.firstName} ${leave.staff.user.lastName}`
+      : 'Unknown',
+    staffEmail: leave.staff?.user?.email || null,
+    staffEmployeeId: leave.staff?.employeeId || null
+  }));
+
+  return {
+    data: transformedData,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasMore: page * limit < total
+    }
+  };
+}
+
 export async function listLeave(organizationId, staffId, options = {}) {
   // Verify staff exists
   await getStaffById(organizationId, staffId);
@@ -596,6 +625,7 @@ export default {
   setAvailability,
   
   // Leave
+  listAllLeave,
   listLeave,
   createLeave,
   updateLeave,

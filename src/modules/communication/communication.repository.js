@@ -8,6 +8,8 @@ import prisma from '../../config/database.js';
 
 export async function findAllMessages(organizationId, userId, options = {}) {
   const { page = 1, limit = 20, folder = 'inbox', isRead, search, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -30,8 +32,8 @@ export async function findAllMessages(organizationId, userId, options = {}) {
         recipient: { select: { id: true, firstName: true, lastName: true, email: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.message.count({ where }),
   ]);
@@ -75,6 +77,8 @@ export async function getUnreadCount(organizationId, userId) {
 
 export async function findAllAnnouncements(organizationId, options = {}) {
   const { page = 1, limit = 20, isActive, priority, search, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -95,8 +99,8 @@ export async function findAllAnnouncements(organizationId, options = {}) {
         createdByUser: { select: { id: true, firstName: true, lastName: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.announcement.count({ where }),
   ]);
@@ -127,6 +131,8 @@ export async function updateAnnouncement(id, data) {
 
 export async function findAllNotifications(organizationId, userId, options = {}) {
   const { page = 1, limit = 20, isRead, type } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -139,8 +145,8 @@ export async function findAllNotifications(organizationId, userId, options = {})
     prisma.notification.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.notification.count({ where }),
   ]);

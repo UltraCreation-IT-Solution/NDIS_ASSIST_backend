@@ -506,6 +506,7 @@ model Organization {
   staffMembers       StaffMember[]
   serviceTypes       ServiceType[]
   shifts             Shift[]
+  shiftTemplates     ShiftTemplate[]
   recurringPatterns  RecurringShiftPattern[]
   invoices           Invoice[]
   payments           Payment[]
@@ -1205,12 +1206,38 @@ model ServiceType {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  shifts       Shift[]
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  shifts         Shift[]
+  shiftTemplates ShiftTemplate[]  // <-- ADD THIS LINE
 
   @@unique([organizationId, serviceCode])
   @@map("service_types")
 }
+
+// Shift Templates - Reusable shift patterns
+model ShiftTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  serviceTypeId   String?  @map("service_type_id")
+  name            String
+  description     String?
+  startTime       String   @map("start_time") // Format: "HH:MM"
+  endTime         String   @map("end_time")   // Format: "HH:MM"
+  durationMinutes Int      @map("duration_minutes")
+  tasks           Json?    // Array of task strings
+  isDefault       Boolean  @default(false) @map("is_default")
+  isActive        Boolean  @default(true) @map("is_active")
+  usageCount      Int      @default(0) @map("usage_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  serviceType  ServiceType? @relation(fields: [serviceTypeId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, isActive])
+  @@map("shift_templates")
+}
+
 
 model Shift {
   id                 String      @id @default(cuid())
@@ -1584,27 +1611,33 @@ model XeroConnection {
 // ============================================================================
 
 model Incident {
-  id               String         @id @default(cuid())
-  organizationId   String         @map("organization_id")
-  incidentNumber   String         @map("incident_number")
-  clientId         String?        @map("client_id")
-  staffId          String?        @map("staff_id")
-  reportedById     String?        @map("reported_by")
-  incidentType     IncidentType   @map("incident_type")
-  severity         Severity
-  description      String
-  location         String?
-  dateOccurred     DateTime       @map("date_occurred")
-  dateReported     DateTime       @default(now()) @map("date_reported")
-  status           IncidentStatus @default(OPEN)
-  isNdisReportable Boolean        @default(false) @map("is_ndis_reportable")
-  ndisReportedAt   DateTime?      @map("ndis_reported_at")
-  ndisReferenceNo  String?        @map("ndis_reference_no")
-  resolution       String?
-  resolvedAt       DateTime?      @map("resolved_at")
-  attachments      Json?
-  createdAt        DateTime       @default(now()) @map("created_at")
-  updatedAt        DateTime       @updatedAt @map("updated_at")
+  id                   String         @id @default(cuid())
+  organizationId       String         @map("organization_id")
+  incidentNumber       String         @map("incident_number")
+  clientId             String?        @map("client_id")
+  staffId              String?        @map("staff_id")
+  reportedById         String?        @map("reported_by")
+  incidentType         IncidentType   @map("incident_type")
+  severity             Severity
+  description          String
+  location             String?
+  dateOccurred         DateTime       @map("date_occurred")
+  dateReported         DateTime       @default(now()) @map("date_reported")
+  status               IncidentStatus @default(OPEN)
+  immediateActionsTaken String?       @map("immediate_actions_taken")
+  witnessNames         String?        @map("witness_names")
+  injuryDetails        String?        @map("injury_details")
+  medicalAttentionRequired Boolean    @default(false) @map("medical_attention_required")
+  policeNotified       Boolean        @default(false) @map("police_notified")
+  ndisReportableIncident Boolean      @default(false) @map("ndis_reportable_incident")
+  isNdisReportable     Boolean        @default(false) @map("is_ndis_reportable")
+  ndisReportedAt       DateTime?      @map("ndis_reported_at")
+  ndisReferenceNo      String?        @map("ndis_reference_no")
+  resolution           String?
+  resolvedAt           DateTime?      @map("resolved_at")
+  attachments          Json?
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
 
   organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client       Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -2077,6 +2110,21 @@ model OrgSetting {
 
   @@unique([organizationId, key], map: "org_settings_organization_id_setting_key_key")
   @@map("org_settings")
+}
+
+// Platform-wide settings (global configuration)
+model PlatformSetting {
+  id          String   @id @default(cuid())
+  category    String?
+  key         String   @unique @map("setting_key")
+  value       String   @map("setting_value")
+  description String?
+  updatedById String?  @map("updated_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@map("platform_settings")
 }
 
 model MasterDataItem {

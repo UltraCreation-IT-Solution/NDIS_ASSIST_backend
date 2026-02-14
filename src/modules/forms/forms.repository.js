@@ -8,6 +8,8 @@ import prisma from '../../config/database.js';
 
 export async function findAllTemplates(organizationId, options = {}) {
   const { page = 1, limit = 20, search, category, isActive, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     organizationId,
@@ -29,8 +31,8 @@ export async function findAllTemplates(organizationId, options = {}) {
         createdByUser: { select: { id: true, firstName: true, lastName: true } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.formTemplate.count({ where }),
   ]);
@@ -104,6 +106,8 @@ export async function findFieldById(id) {
 
 export async function findAllSubmissions(organizationId, options = {}) {
   const { page = 1, limit = 20, templateId, status, clientId, staffId, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+  const pageNum = Number.parseInt(page, 10) || 1;
+  const limitNum = Number.parseInt(limit, 10) || 20;
 
   const where = {
     template: { organizationId },
@@ -123,8 +127,8 @@ export async function findAllSubmissions(organizationId, options = {}) {
         staff: { select: { id: true, employeeId: true, user: { select: { firstName: true, lastName: true } } } },
       },
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     }),
     prisma.formSubmission.count({ where }),
   ]);

@@ -108,6 +108,11 @@ export async function setAvailability(req, res) {
 // LEAVE CONTROLLERS
 // ============================================================================
 
+export async function listAllLeave(req, res) {
+  const result = await service.listAllLeave(req.organizationId, req.query);
+  return paginated(res, result.data, result.pagination, 'Leave requests retrieved');
+}
+
 export async function listLeave(req, res) {
   const result = await service.listLeave(req.organizationId, req.params.staffId, req.query);
   return paginated(res, result.data, result.pagination, 'Leave requests retrieved');

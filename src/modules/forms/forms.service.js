@@ -111,7 +111,8 @@ function normalizeSubmissionForRead(submission) {
 // ============================================================================
 
 export async function listTemplates(organizationId, options = {}) {
-  const { page = 1, limit = 20 } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
   const { data, total } = await repo.findAllTemplates(organizationId, options);
   return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
@@ -179,7 +180,9 @@ export async function archiveTemplate(organizationId, id) {
 // ============================================================================
 
 export async function listSubmissions(organizationId, options = {}) {
-  const { page = 1, limit = 20, status, ...rest } = options;
+  const page = Number.parseInt(options.page, 10) || 1;
+  const limit = Number.parseInt(options.limit, 10) || 20;
+  const { status, ...rest } = options;
   const normalizedOptions = {
     ...rest,
     page,

@@ -42,6 +42,19 @@ import {
 const router = Router();
 
 // ============================================================================
+// ORGANIZATION-WIDE LEAVE ROUTES (before :staffId routes)
+// ============================================================================
+
+// GET /staff/leave - List all leave requests across organization
+router.get(
+  '/leave',
+  authenticate,
+  requirePermission('staff:read'),
+  validate(listLeaveSchema),
+  controller.listAllLeave
+);
+
+// ============================================================================
 // CORE STAFF ROUTES
 // ============================================================================
 

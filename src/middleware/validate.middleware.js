@@ -85,6 +85,14 @@ export function validate(schema) {
 
     // If any errors, throw ValidationError
     if (errors.length > 0) {
+      // Log detailed validation errors for debugging
+      console.error('═══════════════════════════════════════════════════════════');
+      console.error('VALIDATION ERROR DETAILS:');
+      console.error('Path:', req.path);
+      console.error('Method:', req.method);
+      console.error('Errors:', JSON.stringify(errors, null, 2));
+      console.error('Request Body:', JSON.stringify(req.body, null, 2));
+      console.error('═══════════════════════════════════════════════════════════');
       throw new ValidationError('Validation failed', errors);
     }
 

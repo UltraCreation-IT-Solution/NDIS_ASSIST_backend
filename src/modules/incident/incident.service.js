@@ -23,11 +23,16 @@ export async function getIncidentById(organizationId, id) {
 export async function createIncident(organizationId, data, reportedById) {
   const incidentNumber = await repo.getNextIncidentNumber(organizationId);
 
+  // Filter out undefined values from data to prevent Prisma errors
+  const filteredData = Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  );
+
   return repo.createIncident({
     organizationId,
     incidentNumber,
-    ...data,
-    reportedById,
+    ...filteredData,
+    reportedById: reportedById || null,
     dateOccurred: new Date(data.dateOccurred),
     dateReported: new Date(),
   });
